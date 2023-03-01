@@ -10,6 +10,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 from sensor_msgs.msg import JointState
 import hello_helpers.hello_misc as hm
 import gtts
+from std_srvs.srv import Trigger
 from playsound import playsound
 import pyttsx3
 
@@ -175,11 +176,14 @@ class Manipulate_Arm(hm.HelloNode):
         Function that initiates the issue_command function.
         :param self: The self reference.
         """
+        # self.switch_base_to_position = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
+        # self.switch_base_to_position()
+        
         hm.HelloNode.main(self, 'issue_command', 'issue_command', wait_for_first_pointcloud=False)
         rospy.loginfo('issuing command...')
         top = tkinter.Tk()
         B = tkinter.Button(top, text ="Click to go to Home Pose", command = self.issue_command)
-        B2 = tkinter.Button(top, text ="Click to go to Pose2", command = lambda: self.issue_command(0.5,0.9,3.0,0.0, 0.0, 0.0))
+        B2 = tkinter.Button(top, text ="Click to go to Pose2", command = lambda: self.issue_command(0.0,0.9,3.0,0.0, 0.0, 0.0))
         Q = tkinter.Button(top, text="Quit", command=top.destroy)
         B.pack()
         B2.pack()

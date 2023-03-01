@@ -5,8 +5,7 @@ import actionlib
 import sys
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Quaternion
-from nav_msgs.msg import Odometry
-# from std_msgs.msg import Uint8
+from std_msgs.msg import Int8
 from tf import transformations
 
 class StretchNavigation:
@@ -26,9 +25,9 @@ class StretchNavigation:
         self.flag_mm = 0
         self.flag_nav = 0
 
-        # self.nav_subscriber = rospy.subscriber('/nav_flag', Uint8, self.nav_callback)
-        # self.button_subscriber = rospy.subscriber('/button_flag', Uint8, self.button_callback)
-        # self.MM_publisher = rospy.publisher('MM_flag', Uint8, queue_size = 50)
+        # self.nav_subscriber = rospy.subscriber('/nav_flag', Int8, self.nav_callback)
+        # self.button_subscriber = rospy.subscriber('/button_flag', Int8, self.button_callback)
+        self.MM_publisher = rospy.Publisher('MM_flag', Int8, queue_size = 50)
 
         self.goal = MoveBaseGoal()
         self.goal.target_pose.header.frame_id = 'map'
@@ -96,7 +95,8 @@ class StretchNavigation:
         if self.nav_state == 1 and self.flag_nav == 0:
             nav.go_to(0.5, 0.0, 0.0)
             self.flag_mm = 1
-            # self.MM_publisher.publish(self.flag_mm)
+            self.MM_publisher.publish(self.flag_mm)
+            print("flag_mm", self.flag_mm)
             self.flag_nav = 1
             # self.nav_state = 0
 
