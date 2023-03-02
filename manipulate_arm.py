@@ -95,7 +95,7 @@ class Manipulate_Arm(hm.HelloNode):
         # extension, lift, yaw, gripper = 0.0, 0.5, 0.0, 0.2
         
         
-        text = "Command receieved"
+        text = "Happy Birthday to you Lay kaa"
         self.speechEngine.say(text)
 
         # if gripper > 0:
@@ -176,8 +176,8 @@ class Manipulate_Arm(hm.HelloNode):
         Function that initiates the issue_command function.
         :param self: The self reference.
         """
-        # self.switch_base_to_position = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
-        # self.switch_base_to_position()
+        self.switch_base_to_position = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
+        self.switch_base_to_position()
         
         hm.HelloNode.main(self, 'issue_command', 'issue_command', wait_for_first_pointcloud=False)
         rospy.loginfo('issuing command...')
