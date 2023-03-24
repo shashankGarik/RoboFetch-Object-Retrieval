@@ -11,6 +11,7 @@ from sensor_msgs.msg import JointState
 import hello_helpers.hello_misc as hm
 import gtts
 from std_srvs.srv import Trigger
+from std_msgs.msg import Int8
 from playsound import playsound
 import pyttsx3
 
@@ -24,8 +25,10 @@ class Manipulate_Arm(hm.HelloNode):
         self.trajectory_goal = FollowJointTrajectoryGoal()
         self.trajectory_client = actionlib.SimpleActionClient('/stretch_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         self.point = JointTrajectoryPoint()
+
+
         # 'joint_lift'[0.1-1.0]',
-        # 'wrist_extension'[0-0.51],
+        # 'wrist_extension'[0.01-0.51],
         # 'joint_wrist_yaw[0-4.5]', 
         # 'joint_gripper_finger_right/left[0-0.2]'
         # 'joint_head_pan': -4.0->1.75,
@@ -41,6 +44,15 @@ class Manipulate_Arm(hm.HelloNode):
         # self.save_path = '/home/hello-robot/catkin_ws/src/robo_fetch/src'
         # self.export_data = export_data
 
+        self.curr_wrist_extension = 0.0
+        self.curr_lift = 0.0
+        self.curr_yaw = 0.0
+        self.curr_gripper = 0.0
+        self.curr_head_pan = 0.0
+        self.curr_head_tilt = 0.0
+
+
+
 
     def move_to_pose(self, pose):
         # Prepare and send a goal pose to which the robot should move.
@@ -54,7 +66,7 @@ class Manipulate_Arm(hm.HelloNode):
         self.trajectory_client.wait_for_result()
 
 
-    def move_to_initial_configuration(self, extension, lift, yaw, gripper, head_pan, head_tilt):
+    def move_to_configuration(self, extension, lift, yaw, gripper, head_pan, head_tilt):
         # initial_pose = {'wrist_extension': 0.2,
         #                 'joint_wrist_yaw': 4.0}
 
@@ -73,9 +85,17 @@ class Manipulate_Arm(hm.HelloNode):
         :param msg: The JointState message.
         """
         self.joint_states = msg
+        curr_joint_pos = self.get_joint_positions()
+        self.curr_wrist_extension = curr_joint_pos['joint_arm_l0']*4
+        self.curr_lift = curr_joint_pos['joint_lift']
+        self.curr_yaw = curr_joint_pos['joint_wrist_yaw']
+        self.curr_gripper = curr_joint_pos['joint_gripper_finger_right']
+        self.curr_head_pan = curr_joint_pos['joint_head_pan']
+        self.curr_head_tilt = curr_joint_pos['joint_head_tilt']
 
 
-    def issue_command(self,extension=0.0, lift=0.5, yaw=0.0, gripper=0.2, head_pan=-3.0, head_tilt=-1.0):
+
+    def issue_command(self,extension=0.0, lift=0.5, yaw=0.0, gripper=0.0, head_pan=-3.0, head_tilt=-1.0):
         """
         Function that makes an action call and sends joint trajectory goals
         to a single joint.
@@ -95,16 +115,17 @@ class Manipulate_Arm(hm.HelloNode):
         # extension, lift, yaw, gripper = 0.0, 0.5, 0.0, 0.2
         
         
-        text = "Happy Birthday to you Lay kaa"
-        self.speechEngine.say(text)
+        # text = "Happy Birthday to you Lay kaa"
+        # self.speechEngine.say(text)
+
 
         # if gripper > 0:
         #     self.speechEngine.say("Opening Gripper")
         # else:
         #     self.speechEngine.say("Closing Gripper")
-        self.speechEngine.runAndWait()
+        # self.speechEngine.runAndWait()
 
-        self.move_to_initial_configuration(extension, lift, yaw, gripper, head_pan, head_tilt)
+        self.move_to_configuration(extension, lift, yaw, gripper, head_pan, head_tilt)
         
 
         # trajectory_goal.trajectory.points = [point0]
@@ -116,6 +137,25 @@ class Manipulate_Arm(hm.HelloNode):
         
         # rospy.loginfo('Sent position goal = {0}'.format(self.trajectory_goal))
         # self.trajectory_client.wait_for_result()
+
+    def issue_command2(self, extension = None, lift = None, yaw = None, gripper = None, head_pan = None, head_tilt = None):
+        if not extension:
+            extension = self.curr_wrist_extension
+        if not lift:
+            lift = self.curr_lift
+        if not yaw:
+            yaw = self.curr_yaw
+        if not gripper:
+            gripper = self.curr_gripper
+        if not head_pan:
+            head_pan = self.curr_head_pan
+        if not head_tilt:
+            head_tilt = self.curr_head_tilt
+        
+        
+        self.move_to_configuration(extension, lift, yaw, gripper, head_pan, head_tilt)
+
+    
 
     def get_joints(self):
         joints = {}
@@ -131,6 +171,7 @@ class Manipulate_Arm(hm.HelloNode):
         joints = {}
         for i in range(len(self.joint_states.name)):
             j_name = self.joint_states.name[i]
+            # print(j_name)
             joints[j_name] = self.joint_states.position[i]
         return joints
 
@@ -183,10 +224,12 @@ class Manipulate_Arm(hm.HelloNode):
         rospy.loginfo('issuing command...')
         top = tkinter.Tk()
         B = tkinter.Button(top, text ="Click to go to Home Pose", command = self.issue_command)
-        B2 = tkinter.Button(top, text ="Click to go to Pose2", command = lambda: self.issue_command(0.0,0.9,3.0,0.0, 0.0, 0.0))
+        B2 = tkinter.Button(top, text ="Click to go to Pose2", command = lambda: self.issue_command(0.5,0.9,3.0,0.2, 0.0, 0.0))
+        B3 = tkinter.Button(top, text ="Click to go to testPose", command = lambda: self.issue_command2(lift=0.75, gripper=0.2))# head_tilt=-0.1))
         Q = tkinter.Button(top, text="Quit", command=top.destroy)
         B.pack()
         B2.pack()
+        B3.pack()
         Q.pack()
         top.mainloop()
 

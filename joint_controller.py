@@ -25,7 +25,7 @@ class Joints(Enum):
     gripper_aperture = "gripper_aperture"
 
 class JointController(object):
-    MIN_LIFT = 0.3
+    MIN_LIFT = 0.8 #0.3
     MAX_LIFT = 1.09
     MIN_WRIST_EXTENSION = 0.01
     MAX_WRIST_EXTENSION = 0.5
@@ -56,8 +56,19 @@ class JointController(object):
             Joints.wrist_extension,
             Joints.joint_lift
             ],
-            values=[math.pi, 0, -math.pi / 6, 0, JointController.MIN_WRIST_EXTENSION, JointController.MIN_LIFT], # gripper stowed, camera facing forward, camera horizontal to floor, gripper close
+            values=[math.pi, 0, -math.pi / 6, 0.0, JointController.MIN_WRIST_EXTENSION, JointController.MIN_LIFT], # gripper stowed, camera facing forward, camera horizontal to floor, gripper close
             wait=True)
+    # def stow(self):
+    #     self.set_cmd(joints=[
+    #         Joints.joint_wrist_yaw,
+    #         Joints.joint_head_pan,
+    #         Joints.joint_head_tilt,
+    #         Joints.gripper_aperture,
+    #         Joints.wrist_extension,
+    #         Joints.joint_lift
+    #         ],
+    #         values=[math.pi, 0, -math.pi / 6, , JointController.MIN_WRIST_EXTENSION, JointController.MIN_LIFT], # gripper stowed, camera facing forward, camera horizontal to floor, gripper close
+    #         wait=True)    
     
     def set_cmd(self, joints, values, wait):
         point = JointTrajectoryPoint()

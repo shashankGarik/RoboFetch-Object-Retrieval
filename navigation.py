@@ -73,4 +73,4 @@ class StretchNavigation:
 if __name__ == '__main__':
     rospy.init_node('navigation', argv=sys.argv)
     nav = StretchNavigation()
-    nav.go_to(0.5, 0.0, 0.0)
+    nav.go_to(0.0, 0.5, 0.0)
