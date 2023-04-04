@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from sensor_msgs.msg import Imu
 
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CameraInfo
 
@@ -12,14 +12,25 @@ class DisplayCamera:
     def __init__(self):
         # self.image = np.zeros((1920,1080))
         self.bridge = CvBridge()
+
+        # self.depth_sub = rospy.Subscriber("/camera/depth/image_rect_raw", Image, self.depth_callback, queue_size=1)
         
     def image_callback(self, img):
         # self.image = img
 
         # print(np.shape(self.image))
 
-        image = self.bridge.imgmsg_to_cv2(img, "bgr8")
-        rotated_img = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        # image = self.bridge.imgmsg_to_cv2(img, "bgr8")
+        # rotated_img = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+
+        # cv2.imshow('frame', rotated_img)
+        # cv2.waitKey(1)
+
+
+        np_arr = np.fromstring(img.data, np.uint8)
+        image_np = cv2.imdecode(np_arr, cv2.COLOR_BGR2RGB)
+
+        rotated_img = cv2.rotate(image_np, cv2.ROTATE_90_CLOCKWISE)
 
         cv2.imshow('frame', rotated_img)
         cv2.waitKey(1)
@@ -32,7 +43,7 @@ class DisplayCamera:
         rospy.loginfo("{0} started".format(self.node_name))
 
         self.topic_name = '/camera/color/image_raw/compressed'
-        self.image_subscriber = rospy.Subscriber(self.topic_name, Image, self.image_callback)
+        self.image_subscriber = rospy.Subscriber(self.topic_name, CompressedImage, self.image_callback)
         
         # self.corrected_accel_pub = rospy.Publisher('/camera/accel/sample_corrected', Imu, queue_size=1)
 

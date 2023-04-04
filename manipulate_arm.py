@@ -127,6 +127,7 @@ class Manipulate_Arm(hm.HelloNode):
 
         self.move_to_configuration(extension, lift, yaw, gripper, head_pan, head_tilt)
         
+        print(self.get_joint_positions())
 
         # trajectory_goal.trajectory.points = [point0]
         # trajectory_goal.trajectory.header.stamp = rospy.Time(0.0)
@@ -154,7 +155,6 @@ class Manipulate_Arm(hm.HelloNode):
         
         
         self.move_to_configuration(extension, lift, yaw, gripper, head_pan, head_tilt)
-
     
 
     def get_joints(self):
@@ -225,7 +225,7 @@ class Manipulate_Arm(hm.HelloNode):
         top = tkinter.Tk()
         B = tkinter.Button(top, text ="Click to go to Home Pose", command = self.issue_command)
         B2 = tkinter.Button(top, text ="Click to go to Pose2", command = lambda: self.issue_command(0.5,0.9,3.0,0.2, 0.0, 0.0))
-        B3 = tkinter.Button(top, text ="Click to go to testPose", command = lambda: self.issue_command2(lift=0.75, gripper=0.2))# head_tilt=-0.1))
+        B3 = tkinter.Button(top, text ="Click to go to testPose", command = lambda: self.issue_command2(head_pan=-3.0))# head_tilt=-0.1))
         Q = tkinter.Button(top, text="Quit", command=top.destroy)
         B.pack()
         B2.pack()
