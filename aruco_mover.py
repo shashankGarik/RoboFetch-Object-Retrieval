@@ -79,6 +79,8 @@ class ArucoGrasper(object):
         self.xbox_controller = xc.XboxController()
         self.xbox_controller.start()
 
+        self.button_state = 0
+
     def aruco_detected_callback(self, msg):
         self.markers = msg.markers
 
@@ -173,23 +175,34 @@ class ArucoGrasper(object):
 
         rospy.sleep(rospy.Duration(0.1))
 
-        # controller_state = self.xbox_controller.get_state()
+        controller_state = self.xbox_controller.get_state()
 
         # print(controller_state)
 
-        # right_button = controller_state['right_button_pressed']
+        right_button = controller_state['right_button_pressed']
 
-        # if right_button == 0.0 or right_button == False:
-        #     print('Press Right Button')
+        print(self.button_state)
 
-        # else:
-        #     print('Button Pressed: ', right_button)
-        #     print('Right Button Pressed')
+        if right_button == True:
+                print('Getting here')
+                self.button_state = 1
+
+        if right_button == False and self.button_state == 0:
+            print('Press Right Button')
+            
+
+
+        if right_button == False and self.button_state == 1:
+            print('Button Pressed Once: ', right_button)
+            print('Right Button Pressed')
+            # state = 0
+
+        print()
 
         # print('Button Pressed, Executing Grasp')
 
 
-
+        '''
         self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
         self.switch_base_to_manipulation()
 
@@ -369,6 +382,8 @@ class ArucoGrasper(object):
                     # print(self.joint_controller.joint_states.position)
                     return True
 
+        '''
+
         
         
     
@@ -379,8 +394,10 @@ class ArucoGrasper(object):
 if __name__ == '__main__':
     rospy.init_node('aruco_grasper')
     aruco_grasper = ArucoGrasper()
-    aruco_grasper.grasp_aruco()
-    rospy.spin()
+    # aruco_grasper.grasp_aruco()
+    # rospy.spin()
+    while not rospy.is_shutdown():
+        aruco_grasper.grasp_aruco()
 
 
 # if __name__ == '__main__':
