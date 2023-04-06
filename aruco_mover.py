@@ -181,208 +181,201 @@ class ArucoGrasper(object):
 
         right_button = controller_state['right_button_pressed']
 
-        print(self.button_state)
+        # print(self.button_state)
 
-        if right_button == True:
-                print('Getting here')
-                self.button_state = 1
 
-        if right_button == False and self.button_state == 0:
-            print('Press Right Button')
+        # if right_button == False and self.button_state == 0:
+        #     print('Press Right Button')
+
+        # if right_button == True:
+        #         print('Getting here')
+        #         self.button_state = 1
             
 
+        # if right_button == False and self.button_state == 1:
+        #     print('Button Pressed, Executing Grasp')
 
-        if right_button == False and self.button_state == 1:
-            print('Button Pressed Once: ', right_button)
-            print('Right Button Pressed')
-            # state = 0
+        if True:
 
-        print()
+            self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
+            self.switch_base_to_manipulation()
 
-        # print('Button Pressed, Executing Grasp')
-
-
-        '''
-        self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
-        self.switch_base_to_manipulation()
-
-        
-
-        
-        for i in range(-3, 3):
-            rospy.loginfo("Panning")
             
-            self.joint_controller.set_cmd(joints=[
-                Joints.joint_wrist_yaw,
-                Joints.joint_head_pan,
-                Joints.joint_head_tilt,
-                Joints.gripper_aperture
-                ],
-                values=[0, -math.pi / 2 + ((math.pi / 6) * i) , -math.pi/6, 0.0], # gripper facing right, camera facing right, camera tilted towards floor, gripper open
-                wait=True)
 
-            # wait for aruco detection
-            rospy.sleep(rospy.Duration(2))
-
-
-
-            for marker in self.markers:
-                if marker.text == aruco_name:
-                    rospy.loginfo("marker found")
-
-                    aruco_position = marker.pose.position
-                    self.aruco_point = PointStamped()
-                    self.aruco_point.point = aruco_position
-                    header = self.aruco_point.header
-                    header.stamp = marker.header.stamp
-                    header.frame_id = marker.header.frame_id
-                    header.seq = marker.header.seq
-
-                    lookup_time = rospy.Time(0) # return most recent transform
-                    timeout_ros = rospy.Duration(0.1)
-
-                    print('Current Camera Pan', self.curr_head_pan)
-                    print()
-
-
-                    #Align Arm to Aruco Marker
-                    angle_rotate_base, angle_rotate_camera = self.align_arm_to_marker(aruco_name, header.frame_id, lookup_time, timeout_ros)
-
-
-                    self.joint_controller.set_cmd(joints=[
-                        Joints.rotate_mobile_base,
-                        Joints.joint_head_pan], 
-                        values=[
-                        angle_rotate_base, angle_rotate_camera
-                        ], wait=True)
-                    
-                    print('Alignment Done')
-                    rospy.sleep(rospy.Duration(2))
-
-
-
-                    #Calculate Translation, Lift, Extension
-                                        
-                    old_frame_id = self.aruco_point.header.frame_id[:]
-                    new_frame_id = 'base_link'
-                    stamped_transform = self.tf2_buffer.lookup_transform(new_frame_id, old_frame_id, lookup_time, timeout_ros)
-                    points_in_old_frame_to_new_frame_mat = rn.numpify(stamped_transform.transform)
-                    camera_to_base_mat = points_in_old_frame_to_new_frame_mat
-
-                    grasp_center_frame_id = 'link_grasp_center'
-                    stamped_transform = self.tf2_buffer.lookup_transform(new_frame_id, grasp_center_frame_id, lookup_time, timeout_ros)
-                    grasp_center_to_base_mat = rn.numpify(stamped_transform.transform)
-
-                    aruco_camera_xyz = np.array([0.0, 0.0, 0.0, 1.0])
-                    aruco_camera_xyz[:3] = rn.numpify(self.aruco_point.point)[:3]
-
-                    aruco_xyz = np.matmul(camera_to_base_mat, aruco_camera_xyz)[:3]
-                    fingers_xyz = grasp_center_to_base_mat[:,3][:3]
-
-                    handoff_object = True
-
-                    if handoff_object:
-                        # attempt to handoff the object at a location below
-                        # the aruco with respect to the world frame (i.e.,
-                        # gravity)
-                        target_offset_xyz = np.array([0.0, 0.0, 0.0])
-                    else: 
-                        object_height_m = 0.0
-                        target_offset_xyz = np.array([0.0, 0.0, -object_height_m])
-                    target_xyz = aruco_xyz + target_offset_xyz
-
-                    fingers_error = target_xyz - fingers_xyz
-                    print('fingers_error =', fingers_error)
-
-                    delta_forward_m = fingers_error[0] 
-                    delta_extension_m = fingers_error[1]
-                    delta_lift_m = fingers_error[2]
-
-                    max_lift_m = 1.0
-                    lift_goal_m = delta_lift_m
-                    lift_goal_m = min(max_lift_m, lift_goal_m)
-                    # self.lift_goal_m = lift_goal_m
-
-                    # self.mobile_base_forward_m = delta_forward_m
-
-
-
-                    #Translate Mobile Base
-                    self.joint_controller.set_cmd(joints=[
-                            Joints.joint_lift,
-                            Joints.translate_mobile_base,
-                            Joints.gripper_aperture
-                        ],
-                        #self.joint_controller.joint_states.position[Joints.joint_lift.value] + 
-                        values=[
-                            lift_goal_m,    
-                            delta_forward_m, 
-                            0.06
-                        ],
-                        wait=True)
-                    
-
-
-
-                    max_wrist_extension_m = 0.5
+            
+            for i in range(-3, 3):
+                rospy.loginfo("Panning")
                 
-                    wrist_goal_m = self.curr_wrist_extension + delta_extension_m
+                self.joint_controller.set_cmd(joints=[
+                    Joints.joint_wrist_yaw,
+                    Joints.joint_head_pan,
+                    Joints.joint_head_tilt,
+                    Joints.gripper_aperture
+                    ],
+                    values=[0, -math.pi / 2 + ((math.pi / 6) * i) , -math.pi/6, 0.0], # gripper facing right, camera facing right, camera tilted towards floor, gripper open
+                    wait=True)
+
+                # wait for aruco detection
+                rospy.sleep(rospy.Duration(2))
+
+
+
+                for marker in self.markers:
+                    if marker.text == aruco_name:
+                        rospy.loginfo("marker found")
+
+                        aruco_position = marker.pose.position
+                        self.aruco_point = PointStamped()
+                        self.aruco_point.point = aruco_position
+                        header = self.aruco_point.header
+                        header.stamp = marker.header.stamp
+                        header.frame_id = marker.header.frame_id
+                        header.seq = marker.header.seq
+
+                        lookup_time = rospy.Time(0) # return most recent transform
+                        timeout_ros = rospy.Duration(0.1)
+
+                        print('Current Camera Pan', self.curr_head_pan)
+                        print()
+
+
+                        #Align Arm to Aruco Marker
+                        angle_rotate_base, angle_rotate_camera = self.align_arm_to_marker(aruco_name, header.frame_id, lookup_time, timeout_ros)
+
+
+                        self.joint_controller.set_cmd(joints=[
+                            Joints.rotate_mobile_base,
+                            Joints.joint_head_pan], 
+                            values=[
+                            angle_rotate_base, angle_rotate_camera
+                            ], wait=True)
+                        
+                        print('Alignment Done')
+                        rospy.sleep(rospy.Duration(2))
+
+
+
+                        #Calculate Translation, Lift, Extension
+                                            
+                        old_frame_id = self.aruco_point.header.frame_id[:]
+                        new_frame_id = 'base_link'
+                        stamped_transform = self.tf2_buffer.lookup_transform(new_frame_id, old_frame_id, lookup_time, timeout_ros)
+                        points_in_old_frame_to_new_frame_mat = rn.numpify(stamped_transform.transform)
+                        camera_to_base_mat = points_in_old_frame_to_new_frame_mat
+
+                        grasp_center_frame_id = 'link_grasp_center'
+                        stamped_transform = self.tf2_buffer.lookup_transform(new_frame_id, grasp_center_frame_id, lookup_time, timeout_ros)
+                        grasp_center_to_base_mat = rn.numpify(stamped_transform.transform)
+
+                        aruco_camera_xyz = np.array([0.0, 0.0, 0.0, 1.0])
+                        aruco_camera_xyz[:3] = rn.numpify(self.aruco_point.point)[:3]
+
+                        aruco_xyz = np.matmul(camera_to_base_mat, aruco_camera_xyz)[:3]
+                        fingers_xyz = grasp_center_to_base_mat[:,3][:3]
+
+                        handoff_object = True
+
+                        if handoff_object:
+                            # attempt to handoff the object at a location below
+                            # the aruco with respect to the world frame (i.e.,
+                            # gravity)
+                            target_offset_xyz = np.array([0.0, 0.0, 0.0])
+                        else: 
+                            object_height_m = 0.0
+                            target_offset_xyz = np.array([0.0, 0.0, -object_height_m])
+                        target_xyz = aruco_xyz + target_offset_xyz
+
+                        fingers_error = target_xyz - fingers_xyz
+                        print('fingers_error =', fingers_error)
+
+                        delta_forward_m = fingers_error[0] 
+                        delta_extension_m = fingers_error[1]
+                        delta_lift_m = fingers_error[2]
+
+                        max_lift_m = 1.0
+                        lift_goal_m = delta_lift_m
+                        lift_goal_m = min(max_lift_m, lift_goal_m)
+                        # self.lift_goal_m = lift_goal_m
+
+                        # self.mobile_base_forward_m = delta_forward_m
+
+
+
+                        #Translate Mobile Base
+                        self.joint_controller.set_cmd(joints=[
+                                Joints.joint_lift,
+                                Joints.translate_mobile_base,
+                                Joints.gripper_aperture
+                            ],
+                            #self.joint_controller.joint_states.position[Joints.joint_lift.value] + 
+                            values=[
+                                lift_goal_m,    
+                                delta_forward_m, 
+                                0.06
+                            ],
+                            wait=True)
+                        
+
+
+
+                        max_wrist_extension_m = 0.5
                     
-                    print('difference', abs(max_wrist_extension_m - delta_extension_m))
+                        wrist_goal_m = self.curr_wrist_extension + delta_extension_m
+                        
+                        print('difference', abs(max_wrist_extension_m - delta_extension_m))
 
-                    # if handoff_object:
-                        # attempt to handoff the object by keeping distance
-                        # between the object and the aruco distance
-                        #wrist_goal_m = wrist_goal_m - 0.3 # 30cm from the aruco
+                        # if handoff_object:
+                            # attempt to handoff the object by keeping distance
+                            # between the object and the aruco distance
+                            #wrist_goal_m = wrist_goal_m - 0.3 # 30cm from the aruco
 
-                        #Extension offset should only be applied if the marker is further away from the camera
-                        #Offset should be zero if marker is closer than 0.5 meters away from camera.
+                            #Extension offset should only be applied if the marker is further away from the camera
+                            #Offset should be zero if marker is closer than 0.5 meters away from camera.
 
-                    if abs(max_wrist_extension_m - delta_extension_m) > 0.35:
-                        wrist_goal_m = wrist_goal_m + 0.3 # 25cm from the aruco
-                    wrist_goal_m = max(0.0, wrist_goal_m)
+                        if abs(max_wrist_extension_m - delta_extension_m) > 0.35:
+                            wrist_goal_m = wrist_goal_m + 0.3 # 25cm from the aruco
+                        wrist_goal_m = max(0.0, wrist_goal_m)
 
-                    print('extension goal', wrist_goal_m)
+                        print('extension goal', wrist_goal_m)
 
-                    wrist_goal_m = min(max_wrist_extension_m, wrist_goal_m)
-                    print(wrist_goal_m, self.curr_wrist_extension, delta_extension_m)
+                        wrist_goal_m = min(max_wrist_extension_m, wrist_goal_m)
+                        print(wrist_goal_m, self.curr_wrist_extension, delta_extension_m)
 
-                    
+                        
 
-                    #Grab Object
-                    self.joint_controller.set_cmd(joints=[Joints.wrist_extension],
-                        values=[wrist_goal_m],
-                        wait=True)
-                    
-                    rospy.sleep(rospy.Duration(2))
+                        #Grab Object
+                        self.joint_controller.set_cmd(joints=[Joints.wrist_extension],
+                            values=[wrist_goal_m],
+                            wait=True)
+                        
+                        rospy.sleep(rospy.Duration(2))
 
-                    self.joint_controller.set_cmd(joints=[Joints.gripper_aperture], values=[0.0], wait=True)
-
-
-
-                    #Arm Position to Hold Object
-                    self.joint_controller.set_cmd(joints=[
-                            Joints.joint_lift, Joints.wrist_extension
-                        ],
-                        values=[
-                            0.9,0.1
-                        ],
-                        wait=True)
-                    
-
-                    self.joint_controller.set_cmd(joints=[Joints.joint_wrist_yaw], values=[math.pi], wait=True)
-                    
-                    # self.joint_controller.stow()
-
-                    
-
-                    self.gohomeflag = 1
+                        self.joint_controller.set_cmd(joints=[Joints.gripper_aperture], values=[0.0], wait=True)
 
 
-                    # print(self.joint_controller.joint_states.position)
-                    return True
 
-        '''
+                        #Arm Position to Hold Object
+                        self.joint_controller.set_cmd(joints=[
+                                Joints.joint_lift, Joints.wrist_extension
+                            ],
+                            values=[
+                                0.9,0.1
+                            ],
+                            wait=True)
+                        
+
+                        self.joint_controller.set_cmd(joints=[Joints.joint_wrist_yaw], values=[math.pi], wait=True)
+                        
+                        # self.joint_controller.stow()
+
+                        
+
+                        self.gohomeflag = 1
+
+
+                        # print(self.joint_controller.joint_states.position)
+                        return True
+
 
         
         
@@ -394,10 +387,11 @@ class ArucoGrasper(object):
 if __name__ == '__main__':
     rospy.init_node('aruco_grasper')
     aruco_grasper = ArucoGrasper()
-    # aruco_grasper.grasp_aruco()
-    # rospy.spin()
-    while not rospy.is_shutdown():
-        aruco_grasper.grasp_aruco()
+    aruco_grasper.grasp_aruco()
+    rospy.spin()
+
+    # while not rospy.is_shutdown():
+    #     aruco_grasper.grasp_aruco()
 
 
 # if __name__ == '__main__':
