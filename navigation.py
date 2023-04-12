@@ -6,6 +6,7 @@ import sys
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Quaternion
 from tf import transformations
+from std_msgs.msg import Int8
 
 class StretchNavigation:
     """
@@ -20,9 +21,14 @@ class StretchNavigation:
         self.client.wait_for_server()
         rospy.loginfo('{0}: Made contact with move_base server'.format(self.__class__.__name__))
 
+        self.buttons = rospy.Subscriber('/button', Int8, self.button_callback)
+        self.buttons
+
         self.goal = MoveBaseGoal()
         self.goal.target_pose.header.frame_id = 'map'
         self.goal.target_pose.header.stamp = rospy.Time()
+
+        self.aruco_publisher = rospy.Publisher('/to_aruco', Int8, queue_size=10)
 
         self.goal.target_pose.pose.position.x = 0.0
         self.goal.target_pose.pose.position.y = 0.0
@@ -31,6 +37,19 @@ class StretchNavigation:
         self.goal.target_pose.pose.orientation.y = 0.0
         self.goal.target_pose.pose.orientation.z = 0.0
         self.goal.target_pose.pose.orientation.w = 1.0
+        self.do_once = 0
+
+        self.aruco_flag = 0
+    
+    def button_callback(self,button_flag):
+        if button_flag.data == 1 and self.do_once == 0:
+            self.do_once = 1
+            nav.go_to(0.0, 0.5, 0.0)
+            self.aruco_flag = 1
+            self.aruco_publisher.publish(self.aruco_flag)
+
+            
+
 
     def get_quaternion(self,theta):
         """
@@ -73,4 +92,5 @@ class StretchNavigation:
 if __name__ == '__main__':
     rospy.init_node('navigation', argv=sys.argv)
     nav = StretchNavigation()
-    nav.go_to(0.0, 0.5, 0.0)
+    rospy.spin()
+    

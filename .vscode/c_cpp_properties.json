@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/hello-robot/catkin_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/hello-robot/catkin_ws/src/nav_tutorials/include/**",
+        "/home/hello-robot/catkin_ws/src/realsense-ros/realsense2_camera/include/**",
+        "/home/hello-robot/catkin_ws/src/realsense_gazebo_plugin/include/**",
+        "/home/hello-robot/catkin_ws/src/robo_fetch/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

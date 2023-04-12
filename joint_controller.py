@@ -25,7 +25,7 @@ class Joints(Enum):
     gripper_aperture = "gripper_aperture"
 
 class JointController(object):
-    MIN_LIFT = 0.8 #0.3
+    MIN_LIFT = 0.3 #0.3
     MAX_LIFT = 1.09
     MIN_WRIST_EXTENSION = 0.01
     MAX_WRIST_EXTENSION = 0.5
