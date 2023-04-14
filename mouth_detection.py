@@ -102,37 +102,7 @@ class PersonDetectionNode():#hm.HelloNode):
         rospy.Subscriber('/detect_mouth', Int8, self.detect_mouth_callback) #UNCOMMENT
 
         self.move_publisher = rospy.Publisher('/move_to_person', Int8, queue_size=10)
-
-
-
-
-
-        # with self.move_lock: 
-        #     self.handover_goal_ready = False
         
-    # def joint_states_callback(self, joint_states):
-    #     with self.joint_states_lock: 
-    #         self.joint_states = joint_states
-    #     wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
-    #     self.wrist_position = wrist_position
-    #     lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
-    #     self.lift_position = lift_position
-
-    # def look_around_callback(self):
-    #     # Cycle the head back and forth looking for a person to whom
-    #     # to handout the object.
-    #     with self.move_lock:
-    #         pan_index = (self.prev_pan_index + 1) % len(self.pan_angles)
-    #         pan_angle = self.pan_angles[pan_index]
-    #         pose = {'joint_head_pan': pan_angle, 'joint_head_tilt': self.tilt_angle}
-    #         self.move_to_pose(pose)
-    #         self.prev_pan_index = pan_index
-
-    #         if self.mouth_point is not None:
-    #             self.look_around = False
-
-
-    #UNCOMMENT
     def detect_mouth_callback(self, mouth_flag):
         if mouth_flag.data == 1:
             person_detection.move_to_person()
@@ -266,7 +236,7 @@ class PersonDetectionNode():#hm.HelloNode):
 
                 # wait for aruco detection
 
-                rospy.sleep(rospy.Duration(2))
+                rospy.sleep(rospy.Duration(1.5))
 
                 print(len(self.mouth_markers))
                 # print(self.mouth_markers) 

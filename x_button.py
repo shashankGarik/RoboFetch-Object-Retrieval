@@ -11,33 +11,35 @@ class buttonPress(object):
 
         self.button_state = 0
         self.button_publisher = rospy.Publisher('/button', Int8, queue_size=10)
+        self.voice_command = rospy.Subscriber('/voice', Int8, self.voice_command_callback)
+    
+    def voice_command_callback(self, msg):
+        self.do_state = msg.data
+        if self.do_state == 1:
+            rospy.signal_shutdown("Process completed")
 
-    def controller_state(self):
+
+    def controller_state(self): 
         controller_state = self.xbox_controller.get_state()
-
-        # print(controller_state)
 
         right_button = controller_state['right_button_pressed']
 
-        if right_button == False and self.button_state == 0:
-            print('Press Right Button')
-
         if right_button == True:
-                print('Getting here')
+                print('Button pressed')
                 self.button_state = 1
-            
-
-        if right_button == False and self.button_state == 1:
-            print('Button Pressed, Executing Grasp')
+                print(self.button_state)       
 
         self.button_publisher.publish(self.button_state)
-        print(self.button_state)
+        
+        if self.button_state ==  1:
+            rospy.signal_shutdown("Process completed")
 
 
 
 if __name__ == '__main__':
+
     rospy.init_node('button_state')
     stetch_button = buttonPress()
+    print('Press Right Button')
     while not rospy.is_shutdown():
         stetch_button.controller_state()
-    # rospy.spin()

@@ -17,7 +17,7 @@ from std_srvs.srv import Trigger
 from geometry_msgs.msg import PoseStamped, Transform, TransformStamped
 from visualization_msgs.msg import MarkerArray
 from rail_stretch_navigation.srv import GraspAruco
-from manipulate_arm import Manipulate_Arm
+# from manipulate_arm import Manipulate_Arm
 from geometry_msgs.msg import PointStamped
 import ros_numpy as rn
 import numpy as np
@@ -63,17 +63,14 @@ class ArucoGrasper(object):
         self.buttons = rospy.Subscriber('/button', Int8, self.button_callback)
         self.buttons
 
-        # self.aruco = rospy.Subscriber('/to_aruco', Int8, self.aruco_callback)
-        # self.aruco
+        self.voice_command = rospy.Subscriber('/voice', Int8, self.voice_command_callback)
+        self.voice_command
 
         self.mouth_publisher = rospy.Publisher('/detect_mouth', Int8, queue_size=10)
         self.mouth_flag = 0
         
-        rospy.Subscriber('/aruco/marker_array', MarkerArray, self.aruco_detected_callback)
-        self.gohomeflag = 0
+        self.aruc_marker = rospy.Subscriber('/aruco/marker_array', MarkerArray, self.aruco_detected_callback)
 
-        self.mm_flag = 1
-        # self.MM_subscriber = rospy.Subscriber('/MM_flag', Int8, self.mm_callback)
         self.sub = rospy.Subscriber('joint_states', JointState, self.joint_state_callback)
 
         self.curr_wrist_extension = 0.0
@@ -92,23 +89,18 @@ class ArucoGrasper(object):
         self.button_state = 0
         self.do_once = 0
 
-    # def aruco_callback(self, msg):
-    #     self.aruco_state = msg.data
-    #     # print(self.button_state, 'this is the message')
-
-    #     if self.aruco_state == 1 and self.do_once == 0:
-    #         self.do_once = 1
-    #         self.grasp_aruco()
-
     def button_callback(self, msg):
         self.button_state = msg.data
-        # print(self.button_state, 'this is the message')
-
         if self.button_state == 1 and self.do_once == 0:
             self.do_once = 1
             self.grasp_aruco()
 
-    
+    def voice_command_callback(self, msg):
+        self.do_state = msg.data
+        if self.do_state == 1 and self.do_once == 0:
+            self.do_once = 1
+            self.grasp_aruco()
+
 
     def aruco_detected_callback(self, msg):
         self.markers = msg.markers
@@ -138,11 +130,6 @@ class ArucoGrasper(object):
     
 
     def align_arm_to_marker(self, aruco_name, aruco_frame_id, lookup_time, timeout_ros):
-        # rospy.sleep(rospy.Duration(2))
-        # print(len(self.markers))
-
-        
-
         if len(self.markers) > 0:
             print('Detected Marker')
 
@@ -204,38 +191,13 @@ class ArucoGrasper(object):
 
     def grasp_aruco(self, aruco_name="unknown"):
 
-        rospy.sleep(rospy.Duration(0.1))
-
-        # controller_state = self.xbox_controller.get_state()
-
-        # print(controller_state)
-
-        # right_button = controller_state['right_button_pressed']
-
-        # print(self.button_state)
-
-
-        # if right_button == False and self.button_state == 0:
-        #     print('Press Right Button')
-
-        # if right_button == True:
-        #         print('Getting here')
-        #         self.button_state = 1
-            
-
-        # if right_button == False and self.button_state == 1:
-        #     print('Button Pressed, Executing Grasp')
-
-        
+        rospy.sleep(rospy.Duration(0.1))   
 
         if self.do_once == 1:
 
             self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
             self.switch_base_to_manipulation()
 
-            
-
-            
             for i in range(-3, 3):
                 rospy.loginfo("Panning")
                 
@@ -329,11 +291,6 @@ class ArucoGrasper(object):
                         max_lift_m = 1.0
                         lift_goal_m = delta_lift_m
                         lift_goal_m = min(max_lift_m, lift_goal_m)
-                        # self.lift_goal_m = lift_goal_m
-
-                        # self.mobile_base_forward_m = delta_forward_m
-
-
 
                         #Translate Mobile Base
                         self.joint_controller.set_cmd(joints=[
@@ -402,9 +359,9 @@ class ArucoGrasper(object):
                         # self.joint_controller.stow()
                         self.mouth_flag = 1
                         self.mouth_publisher.publish(self.mouth_flag)
+                        
+                        rospy.signal_shutdown("Completed")
 
-                        # print(self.joint_controller.joint_states.position)
-                        return True
 
 
 
@@ -412,59 +369,4 @@ class ArucoGrasper(object):
 if __name__ == '__main__':
     rospy.init_node('aruco_grasper')
     aruco_grasper = ArucoGrasper()
-    # if aruco_grasper.button_state == 1:
-    # if True:
-    # aruco_grasper.grasp_aruco()
     rospy.spin()
-
-    # while not rospy.is_shutdown():
-    #     aruco_grasper.grasp_aruco()
-
-
-# if __name__ == '__main__':
-#     rospy.init_node('aruco_grasper')
-#     rate = rospy.Rate(10)
-#     aruco_grasper = ArucoGrasper()
-
-#     xbox_controller = xc.XboxController()
-#     xbox_controller.start()
-
-#     controller_state = xbox_controller.get_state()
-
-#     button_flag = 0
-
-#     # while not rospy.is_shutdown():
-#     #     rospy.sleep(rospy.Duration(0.01))
-
-#     #     right_button = controller_state['right_button_pressed']
-#     #     # print('Press Right Button')
-
-#     #     if button_flag == 0:
-#     #         print('Press Right Button')
-#     #         if right_button == True:
-#     #             button_flag = 1
-
-#     #     elif button_flag == 1:
-#     #         print('Button Pressed: ', right_button)
-#     #         print('Right Button Pressed')
-#     #         aruco_grasper.grasp_aruco()
-        
-#     #     rate.sleep()
-
-#     if button_flag == 0:
-#         right_button = controller_state['right_button_pressed']
-#         # print('Press Right Button')
-
-#         # if button_flag == 0:
-#         print('Press Right Button')
-#         if right_button == True:
-#             button_flag = 1
-
-#         # elif button_flag == 1:
-#         #     print('Button Pressed: ', right_button)
-#         #     print('Right Button Pressed')
-#         #     aruco_grasper.grasp_aruco()
-#     elif button_flag == 1:
-#         print('Starting Function')
-#         aruco_grasper.grasp_aruco()
-#         rospy.spin()
