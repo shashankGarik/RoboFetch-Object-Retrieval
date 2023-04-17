@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+#NEED TO COMMENT OUT 2 LINES FOR PUBS AND SUBS TO WORK
+
+
+
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
@@ -99,13 +103,13 @@ class PersonDetectionNode():#hm.HelloNode):
         
         self.mouth_position_subscriber = rospy.Subscriber('/nearest_mouth/marker_array', MarkerArray, self.mouth_position_callback)
         
-        rospy.Subscriber('/detect_mouth', Int8, self.detect_mouth_callback) #UNCOMMENT
+        self.detect_mouth = rospy.Subscriber('/detect_mouth', Int8, self.detect_mouth_callback) #UNCOMMENT
 
         self.move_publisher = rospy.Publisher('/move_to_person', Int8, queue_size=10)
         
     def detect_mouth_callback(self, mouth_flag):
         if mouth_flag.data == 1:
-            person_detection.move_to_person()
+            self.move_to_person()
         
 
     def joint_state_callback(self, msg):
@@ -219,8 +223,8 @@ class PersonDetectionNode():#hm.HelloNode):
 
         with self.move_lock:
 
-            self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
-            self.switch_base_to_manipulation()
+            # self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
+            # self.switch_base_to_manipulation()
 
             for i in range(-3, 4):
                 rospy.loginfo("Panning")
@@ -293,8 +297,10 @@ class PersonDetectionNode():#hm.HelloNode):
 
                         self.move_publisher.publish(self.move_flag)
 
+                        rospy.signal_shutdown("Completed")
 
-                        return True
+
+                        # return True
                     
 
 

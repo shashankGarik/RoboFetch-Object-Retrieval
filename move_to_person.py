@@ -37,7 +37,7 @@ import hello_helpers.hello_misc as hm
 import stretch_funmap.navigate as nv
 
 
-class PersonDetectionNode():#hm.HelloNode):
+class Move2PersonNode():#hm.HelloNode):
 
     def __init__(self):
         # hm.HelloNode.__init__(self)
@@ -77,7 +77,7 @@ class PersonDetectionNode():#hm.HelloNode):
 
         self.mouth_markers = []
 
-        self.move_flag = 1
+        # self.move_flag = 1
 
         self.trans_base = TransformStamped()
         self.trans_camera = TransformStamped()
@@ -87,18 +87,32 @@ class PersonDetectionNode():#hm.HelloNode):
         self.mouth_position_subscriber = rospy.Subscriber('/nearest_mouth/marker_array', MarkerArray, self.mouth_position_callback)
         self.pub = rospy.Publisher('/stretch/cmd_vel', Twist, queue_size=1)
 
-        # self.move_subscriber = rospy.Subscriber('/move_to_person', Int8, self.detect_mouth_callback, queue_size=10)
+        self.move_subscriber = rospy.Subscriber('/move_to_person', Int8, self.detect_mouth_callback, queue_size=10)
 
-        self.switch_base_to_navigation = rospy.ServiceProxy('/switch_to_navigation_mode', Trigger)
-        self.switch_base_to_navigation()
+        # self.switch_base_to_navigation = rospy.ServiceProxy('/switch_to_navigation_mode', Trigger)
+        # self.switch_base_to_navigation()
+
+        self.marker_found_flag = 0 #Change to 0
+        self.stopped = 0
 
         
 
-
     def detect_mouth_callback(self, move_flag):
-        pass
-        # if move_flag.data == 1:
-        #     self.main_function()
+        # pass
+        # print(move_flag.data)
+        # if move_flag.data == 1 and self.marker_found_flag == 1:
+        #     print('Getting Here')
+        #     self.follow_person()
+        #     # self.main_function()
+        print(move_flag.data,'flag')
+        if move_flag.data == 1:
+            self.marker_found_flag = 1
+            print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
+
+            self.switch_base_to_navigation = rospy.ServiceProxy('/switch_to_navigation_mode', Trigger)
+            self.switch_base_to_navigation()
+            rospy.sleep(rospy.Duration(2))
+
 
     def mouth_position_callback(self, msg):
         self.mouth_markers = msg.markers
@@ -125,16 +139,28 @@ class PersonDetectionNode():#hm.HelloNode):
                 # print('z dist:', z_t)
                 # print()
                 # rospy.sleep(rospy.Duration(5))
-                print(self.z)
+                # print(self.z)
 
-                self.follow_person()
+                # print(self.marker_found_flag)
+
+                
+                
+                #ERROR WITH CALLBACK. FLAG THROWS AN ERROR TO LAUNCH FILE
+                if self.marker_found_flag == 1:
+                    self.follow_person()
+                    
 
 
     def follow_person(self):
+        # self.switch_base_to_navigation = rospy.ServiceProxy('/switch_to_navigation_mode', Trigger)
+        # self.switch_base_to_navigation()
         command = Twist()
+        # command = JointController()
         stopping_dist = 0.3 + 0.5
 
-        if abs(self.z) < stopping_dist:
+        print(self.z)
+
+        if abs(self.z) < stopping_dist and self.stopped == 0:
             print('Stopping PID')        
             command.linear.x = 0.0
             command.linear.y = 0.0
@@ -143,13 +169,23 @@ class PersonDetectionNode():#hm.HelloNode):
             command.angular.y = 0.0
             command.angular.z = 0.0
 
+            self.stopped = 1
+
             self.pub.publish(command)
+
+            # self.marker_found_flag = 0
+        
+        elif self.stopped == 1:
 
             lookup_time = rospy.Time(0) # return most recent transform
             timeout_ros = rospy.Duration(0.1)
             self.align_arm_to_marker(self.mouth_frame_id, lookup_time, timeout_ros)
 
+
         else:
+            # self.switch_base_to_navigation = rospy.ServiceProxy('/switch_to_navigation_mode', Trigger)
+            # self.switch_base_to_navigation()
+
             k1 = 0.5
             k2 = 2#1
             
@@ -168,13 +204,12 @@ class PersonDetectionNode():#hm.HelloNode):
 
     #Change and Integrate
     def align_arm_to_marker(self, marker_frame_id, lookup_time, timeout_ros):
-        # rospy.sleep(rospy.Duration(2))
         # print(len(self.markers))
-
-        #Might need idk
         
         self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
         self.switch_base_to_manipulation()
+        
+        print('Aligning')
 
         if len(self.mouth_markers) > 0:
             print('Detected Marker')
@@ -240,6 +275,10 @@ class PersonDetectionNode():#hm.HelloNode):
                         
                     print('Alignment Done')
 
+                    rospy.signal_shutdown("Completed")
+
+                    # return True
+
                     # return angle_rotate_base, angle_rotate_camera
     
     # def main_function(self):
@@ -264,8 +303,6 @@ class PersonDetectionNode():#hm.HelloNode):
     #         rospy.sleep(rospy.Duration(5))
 
 if __name__ == '__main__':
-    rospy.init_node('person_detection')
-    person_detection = PersonDetectionNode()
-
-    # person_detection.main_function() #COMMENT OUT
+    rospy.init_node('Move2PersonNode')
+    person_detection = Move2PersonNode()
     rospy.spin()

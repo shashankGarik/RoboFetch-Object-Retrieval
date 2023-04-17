@@ -1,6 +1,8 @@
 import rospy
 import stretch_body.xbox_controller as xc
 from std_msgs.msg import Int8
+from gtts import gTTS
+from playsound import playsound
 
 
 class buttonPress(object):
@@ -25,10 +27,12 @@ class buttonPress(object):
         right_button = controller_state['right_button_pressed']
 
         if right_button == True:
-                print('Button pressed')
-                self.button_state = 1
-                print(self.button_state)       
-
+            print('Button pressed')
+            self.button_state = 1
+            print(self.button_state)      
+            # playsound("technical.mp3") 
+            # playsound("personalized.mp3") 
+            # playsound("generic.mp3") 
         self.button_publisher.publish(self.button_state)
         
         if self.button_state ==  1:
