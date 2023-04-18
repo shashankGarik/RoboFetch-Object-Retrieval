@@ -103,7 +103,6 @@ class Move2PersonNode():#hm.HelloNode):
         # if move_flag.data == 1 and self.marker_found_flag == 1:
         #     print('Getting Here')
         #     self.follow_person()
-        #     # self.main_function()
         print(move_flag.data,'flag')
         if move_flag.data == 1:
             self.marker_found_flag = 1
@@ -280,27 +279,6 @@ class Move2PersonNode():#hm.HelloNode):
                     # return True
 
                     # return angle_rotate_base, angle_rotate_camera
-    
-    # def main_function(self):
-    #     # for marker in self.mouth_markers:
-    #     # if marker.type == self.mouth_marker_type:
-    #     if self.mouth_markers[0].type == self.mouth_marker_type:
-    #         marker = self.mouth_markers[0]
-        
-    #         mouth_frame_id = marker.header.frame_id
-    #         lookup_time = rospy.Time(0) # return most recent transform
-    #         timeout_ros = rospy.Duration(0.1)
-    #         self.trans_base = self.tf2_buffer.lookup_transform('base_link', mouth_frame_id, lookup_time, timeout_ros)
-
-    #         x_t = self.trans_base.transform.translation.x
-    #         y_t = self.trans_base.transform.translation.y
-    #         z_t = self.trans_base.transform.translation.z
-
-    #         print('x dist:', x_t)
-    #         print('y dist:', y_t)
-    #         print('z dist:', z_t)
-    #         print()
-    #         rospy.sleep(rospy.Duration(5))
 
 if __name__ == '__main__':
     rospy.init_node('Move2PersonNode')

@@ -7,8 +7,10 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Quaternion
 from std_msgs.msg import Int8
 from tf import transformations
-from manipulate_arm import Manipulate_Arm
+# from manipulate_arm import Manipulate_Arm
 import numpy as np
+from geometry_msgs.msg import Twist
+from std_srvs.srv import Trigger
 
 class StretchNavigation:
     """
@@ -27,12 +29,18 @@ class StretchNavigation:
         self.flag_mm = 0
         self.flag_nav = 0
 
-        self.nav_subscriber = rospy.Subscriber('/nav_flag', Int8, self.nav_callback)
+        # self.nav_subscriber = rospy.Subscriber('/nav_flag', Int8, self.nav_callback)
         # self.button_subscriber = rospy.subscriber('/button_flag', Int8, self.button_callback)
         self.MM_publisher = rospy.Publisher('/MM_flag', Int8, queue_size = 50)
 
-        self.voice_command_flag = 0
-        self.voice_subscriber = rospy.Subscriber('/voice_command', Int8, self.voice_callback)
+        self.buttons = rospy.Subscriber('/button', Int8, self.button_callback)
+        self.buttons
+
+        # self.voice_command = rospy.Subscriber('/voice', Int8, self.voice_command_callback)
+        # self.voice_command
+        self.do_once = 0
+        
+        # self.pub = rospy.Publisher('/stretch/cmd_vel', Twist, queue_size=1)
 
         self.goal = MoveBaseGoal()
         self.goal.target_pose.header.frame_id = 'map'
@@ -46,17 +54,55 @@ class StretchNavigation:
         self.goal.target_pose.pose.orientation.z = 0.0
         self.goal.target_pose.pose.orientation.w = 1.0
 
-        self.node = Manipulate_Arm()
+        # self.node = Manipulate_Arm()
 
         # self._odom_subscriber = self.create_subscription(Odometry, '/odom', self._motion_controller, 1)
         # self._odom_subscriber
 
-
-    def voice_callback(self, data):
-        self.voice_command_flag = data
-
-        if self.voice_command_flag == 1:
+    def button_callback(self, msg):
+        self.button_state = msg.data
+        if self.button_state == 1 and self.do_once == 0:
+            self.flag_nav = 1
             self.gotoGoal()
+
+    def voice_command_callback(self, msg):
+        self.do_state = msg.data
+        if self.do_state == 1 and self.do_once == 0:
+            self.flag_nav = 1
+            self.gotoGoal()
+
+    # def gotoGoal(self):
+        # self.switch_base_to_navigation = rospy.ServiceProxy('/switch_to_navigation_mode', Trigger)
+        # self.switch_base_to_navigation()
+        # print("Going to goal")
+        # k1 = 0.5
+        # k2 = 2#1
+        
+        # command = Twist()
+
+        # command.linear.x = k1
+        # command.linear.y = 0.0
+        # command.linear.z = 0.0
+        # command.angular.x = 0.0 
+        # command.angular.y = 0.0
+        # command.angular.z = 0.0
+
+        # self.pub.publish(command)
+        
+        # rospy.sleep(rospy.Duration(10))
+        # self.stopMovement()
+
+    # def stopMovement(self):
+    #     command = Twist()
+
+    #     command.linear.x = 0.0
+    #     command.linear.y = 0.0
+    #     command.linear.z = 0.0
+    #     command.angular.x = 0.0 
+    #     command.angular.y = 0.0
+    #     command.angular.z = 0.0
+
+    #     self.pub.publish(command)
 
     def get_quaternion(self,theta):
         """
@@ -100,13 +146,13 @@ class StretchNavigation:
     #     # if buttonpress == 1:
     #         self.nav_state = buttonpress
 
-    def nav_callback(self, lilnav):
-        self.flag_nav = lilnav
+    # def nav_callback(self, lilnav):
+    #     self.flag_nav = lilnav
 
     def gotoGoal(self):
         # nav = StretchNavigation()
 
-        self.nav_state = 1
+        self.nav_state = 0
 
         if self.nav_state == 1 and self.flag_nav == 0:
             self.go_to(0.0, 0.0, 0.0)
@@ -114,13 +160,22 @@ class StretchNavigation:
             self.flag_mm = 1
             self.MM_publisher.publish(self.flag_mm)
             print("flag_mm", self.flag_mm)
-            # self.node.issue_command2(lift=0.8, extension=0.5, head_pan=1.7, head_tilt=0.0)
-            # rospy.sleep(10)
-            # self.flag_nav = 1
-            # self.nav_state = 0
 
         if self.flag_nav == 1:
-            self.go_to(-1.0, 0.0, 0.0)
+            print('going to point1')
+            self.go_to(1.3, 0.0, -np.pi/2)
+            print('sleeping')
+            rospy.sleep(2)
+            print('going to point2')
+            self.go_to(1, -1.35, -np.pi/2)
+            print('arrived')
+            self.flag_mm = 1
+            rospy.sleep(rospy.Duration(2))
+            self.MM_publisher.publish(self.flag_mm)
+
+            from subprocess import call
+            call(["python3", "retrival_launch_runner.py"])
+            # rospy.signal_shutdown("Navigation Completed")
             # self.flag_nav = 0
 
 
@@ -128,6 +183,5 @@ if __name__ == '__main__':
     rospy.init_node('navigation', argv=sys.argv)
 
     navv = StretchNavigation()
+    navv.gotoGoal()
     rospy.spin()
-    # navv.gotoGoal()
-    

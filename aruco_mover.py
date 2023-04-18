@@ -58,13 +58,9 @@ class ArucoGrasper(object):
         self.joint_controller = JointController()
         self.markers = []
 
-        self.joint_controller.stow() #Ucomment
-
-        self.buttons = rospy.Subscriber('/button', Int8, self.button_callback)
-        self.buttons
-
-        self.voice_command = rospy.Subscriber('/voice', Int8, self.voice_command_callback)
-        self.voice_command
+        self.MM_publisher = rospy.Subscriber('/start_aruco_flag', Int8, self.button_callback)
+        # self.buttons = rospy.Subscriber('/button', Int8, self.button_callback)
+        # self.buttons
 
         self.mouth_publisher = rospy.Publisher('/detect_mouth', Int8, queue_size=10)
         self.mouth_flag = 0
@@ -89,17 +85,28 @@ class ArucoGrasper(object):
         self.button_state = 0
         self.do_once = 0
 
+        # self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
+        # self.switch_base_to_manipulation()
+
+        # self.joint_controller.stow() #Ucomment
+        # print("Stowed")
+
     def button_callback(self, msg):
         self.button_state = msg.data
         if self.button_state == 1 and self.do_once == 0:
+
+            self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
+            self.switch_base_to_manipulation()
             self.do_once = 1
+            self.joint_controller.stow() #Ucomment
+            print("Stowed")
             self.grasp_aruco()
 
-    def voice_command_callback(self, msg):
-        self.do_state = msg.data
-        if self.do_state == 1 and self.do_once == 0:
-            self.do_once = 1
-            self.grasp_aruco()
+    # def voice_command_callback(self, msg):
+    #     self.do_state = msg.data
+    #     if self.do_state == 1 and self.do_once == 0:
+    #         self.do_once = 1
+    #         self.grasp_aruco()
 
 
     def aruco_detected_callback(self, msg):
@@ -196,10 +203,9 @@ class ArucoGrasper(object):
 
         if self.do_once == 1:
 
-            self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
-            self.switch_base_to_manipulation()
 
-            for i in range(1, 8):
+
+            for i in range(-4, 10):
                 rospy.loginfo("Panning")
                 
                 self.joint_controller.set_cmd(joints=[
@@ -208,7 +214,7 @@ class ArucoGrasper(object):
                     Joints.joint_head_tilt,
                     Joints.gripper_aperture
                     ],
-                    values=[0, -math.pi / 2 + ((math.pi / 12) * i) , -math.pi/9, 0.0], # gripper facing right, camera facing right, camera tilted towards floor, gripper open
+                    values=[0, -2*math.pi / 3 + ((math.pi / 12) * i) , -math.pi/6, 0.0], # gripper facing right, camera facing right, camera tilted towards floor, gripper open
                     wait=True)
 
                 # wait for aruco detection
@@ -323,8 +329,11 @@ class ArucoGrasper(object):
                             #Extension offset should only be applied if the marker is further away from the camera
                             #Offset should be zero if marker is closer than 0.5 meters away from camera.
 
-                        if abs(max_wrist_extension_m - abs(delta_extension_m)) > 0.33:
+                        if abs(max_wrist_extension_m - abs(delta_extension_m)) > 0.35:
                             wrist_goal_m = wrist_goal_m + 0.3 # 25cm from the aruco
+                        else:
+                            wrist_goal_m += 0.03
+
                         wrist_goal_m = max(0.0, wrist_goal_m)
 
                         print('extension goal', wrist_goal_m)
@@ -350,7 +359,7 @@ class ArucoGrasper(object):
                                 Joints.joint_lift, Joints.wrist_extension
                             ],
                             values=[
-                                1.05,0.0
+                                .95,0.0
                             ],
                             wait=True)
                         
@@ -370,4 +379,5 @@ class ArucoGrasper(object):
 if __name__ == '__main__':
     rospy.init_node('aruco_grasper')
     aruco_grasper = ArucoGrasper()
+    # aruco_grasper.button_callback(Int8(1))
     rospy.spin()
