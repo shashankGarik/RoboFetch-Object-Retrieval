@@ -29,10 +29,6 @@ class buttonPress(object):
         if right_button == True:
             print('Button pressed')
             self.button_state = 1
-            print(self.button_state)      
-            # playsound("technical.mp3") 
-            # playsound("personalized.mp3") 
-            # playsound("generic.mp3") 
         self.button_publisher.publish(self.button_state)
         
         if self.button_state ==  1:

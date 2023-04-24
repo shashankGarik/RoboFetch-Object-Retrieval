@@ -5,27 +5,12 @@ import math
 import rospy
 import sys
 
-# We're going to subscribe to 64-bit integers, so we need to import the definition
-# for them
 from sensor_msgs.msg import JointState
-
-# Import Int32 message typs from the std_msgs package
 from std_msgs.msg import Int32,Int8
-
-# Import the FollowJointTrajectoryGoal from the control_msgs.msg package to
-# control the Stretch robot
 from control_msgs.msg import FollowJointTrajectoryGoal
-
-# Import JointTrajectoryPoint from the trajectory_msgs package to define
-# robot trajectories
 from trajectory_msgs.msg import JointTrajectoryPoint
-
-# Import hello_misc script for handling trajectory goals with an action client
 import hello_helpers.hello_misc as hm
-
-# Import SpeechRecognitionCandidates from the speech_recognition_msgs package
 from speech_recognition_msgs.msg import SpeechRecognitionCandidates
-
 from gtts import gTTS
 from playsound import playsound
 

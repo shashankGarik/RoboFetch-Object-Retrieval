@@ -56,8 +56,11 @@ class JointController(object):
             Joints.wrist_extension,
             Joints.joint_lift
             ],
-            values=[math.pi, 0, -math.pi / 6, 0.0, JointController.MIN_WRIST_EXTENSION, JointController.MIN_LIFT], # gripper stowed, camera facing forward, camera horizontal to floor, gripper close
+            values=[math.pi, -math.pi/2, -math.pi / 6, 0.0,
+                     JointController.MIN_WRIST_EXTENSION, JointController.MIN_LIFT], # gripper stowed, camera facing forward, camera horizontal to floor, gripper close
             wait=True)
+        
+        
     # def stow(self):
     #     self.set_cmd(joints=[
     #         Joints.joint_wrist_yaw,
@@ -95,3 +98,10 @@ class JointController(object):
                 rospy.sleep(rospy.Duration(2))
             else:
                 self.trajectory_client.wait_for_result(rospy.Duration(5.0))
+
+
+if __name__ == '__main__':
+    rospy.init_node('joint')
+    joint = JointController()
+    # joint.stow()
+    rospy.spin()
