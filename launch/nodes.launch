@@ -1,0 +1,17 @@
+<launch>
+
+
+  <!-- ARUCO DETECTOR -->
+  <node name="aruco_mover" pkg="robo_fetch" type="aruco_mover.py" output="screen" />
+  <!-- -->
+
+
+  <!-- VOICE DETECTOR -->
+  <node name="voice" pkg="robo_fetch" type="voice_commands.py" output="screen" />
+  <!-- -->
+
+  <!-- BUTTON DETECTOR -->
+  <node name="button" pkg="robo_fetch" type="x_button.py" output="screen" />
+  <!-- -->
+
+</launch>
