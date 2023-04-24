@@ -92,6 +92,8 @@ class ArucoGrasper(object):
             self.switch_base_to_manipulation = rospy.ServiceProxy('/switch_to_position_mode', Trigger)
             self.switch_base_to_manipulation()
             self.do_once = 1
+            self.joint_controller.stow() #Ucomment
+            print("Stowed")
             self.grasp_aruco()
 
     def aruco_detected_callback(self, msg):
@@ -328,5 +330,5 @@ class ArucoGrasper(object):
 if __name__ == '__main__':
     rospy.init_node('aruco_grasper')
     aruco_grasper = ArucoGrasper()
-    aruco_grasper.button_callback(Int8(1))
+    # aruco_grasper.button_callback(Int8(1))
     rospy.spin()

@@ -86,6 +86,14 @@ class Move2PersonNode():
         
 
     def detect_mouth_callback(self, move_flag):
+<<<<<<< HEAD:nodes/move_to_person.py
+=======
+        # pass
+        # print(move_flag.data)
+        # if move_flag.data == 1 and self.marker_found_flag == 1:
+        #     print('Getting Here')
+        #     self.follow_person()
+>>>>>>> ba370738c9c167b9ab68b20d21e441959c9a02a2:move_to_person.py
         print(move_flag.data,'flag')
         if move_flag.data == 1:
             self.marker_found_flag = 1
@@ -215,6 +223,12 @@ class Move2PersonNode():
 
                     rospy.signal_shutdown("Completed")
 
+<<<<<<< HEAD:nodes/move_to_person.py
+=======
+                    # return True
+
+                    # return angle_rotate_base, angle_rotate_camera
+>>>>>>> ba370738c9c167b9ab68b20d21e441959c9a02a2:move_to_person.py
 
 if __name__ == '__main__':
     rospy.init_node('Move2PersonNode')
